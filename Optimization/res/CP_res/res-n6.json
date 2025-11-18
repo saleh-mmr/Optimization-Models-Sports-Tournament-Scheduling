@@ -1,0 +1,15 @@
+{
+  "CP_fairness": {
+    "time": 300,
+    "optimal": false,
+    "obj": 6,
+    "sol": [
+      [[1,4],[2,6],[5,3]],
+      [[2,1],[4,5],[6,3]],
+      [[3,2],[6,4],[5,1]],
+      [[6,5],[3,1],[4,2]],
+      [[4,3],[5,2],[6,1]]
+    ],
+    "comment": "Best fairness (total_imbalance = 6) reached early; solver continued searching until timeout."
+  }
+}

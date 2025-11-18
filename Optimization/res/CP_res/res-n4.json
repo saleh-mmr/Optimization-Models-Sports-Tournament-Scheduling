@@ -1,0 +1,9 @@
+{
+  "CP_fairness": {
+    "time": 0,
+    "optimal": false,
+    "obj": null,
+    "sol": [],
+    "comment": "UNSAT — model overconstrained for small n due to symmetry-breaking."
+  }
+}
