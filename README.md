@@ -222,9 +222,195 @@ Example matrix entry:
 [ [2,4], [5,1], [3,6], ... ]
 ```
 
+
 ---
 
-## **6. Reproducibility Requirements**
+## **6. File Description**
+
+## 📂 `Decision/`
+
+This folder contains all **decision-version models and solvers** used to solve the Sports Tournament Scheduling problem using different technologies.
+
+---
+
+### 📄 `Decision/run.py`
+
+**Main entry point of the Decision project.**
+
+* Parses command-line arguments (`--model`, `--n`, `--batch`)
+* Dispatches execution to the selected approach:
+
+  * SAT (`Decision/SAT`)
+  * CP (`Decision/CP`)
+* Supports:
+
+  * single instance execution (`--n`)
+  * batch execution (`--batch`)
+
+Example:
+
+```bash
+python3 Decision/run.py --model CP --batch 6 8 10
+```
+
+---
+
+## 📂 `Decision/CP/`
+
+Contains the **Constraint Programming (CP)** formulation and execution logic using **MiniZinc**.
+
+### 📄 `cp_model.mzn`
+
+* MiniZinc model encoding the **decision version** of the tournament scheduling problem
+* Defines:
+
+  * teams, weeks, periods
+  * home/away assignments
+  * all problem constraints (one match per team per week, unique pairings, etc.)
+* Outputs solutions in the form:
+
+  ```
+  SOL=[[[home,away], ...], ...]
+  ```
+
+---
+
+### 📄 `cp_solve.py`
+
+**Low-level CP solver interface.**
+
+* Executes MiniZinc via command line using:
+
+  * `gecode`
+  * `chuffed`
+* Measures runtime
+* Robustly parses MiniZinc output (handles different environments, including Docker)
+* Converts MiniZinc solutions into Python structures
+* Writes results to:
+
+  ```
+  Decision/res/CP/<n>.json
+  ```
+* Ensures full compliance with the course specification (§2.4):
+
+  * integer runtime
+  * `time = 300 ⇔ optimal = false`
+  * `obj = null` for decision problems
+
+---
+
+### 📄 `cp_runner.py`
+
+**High-level CP experiment runner.**
+
+* Calls `solve_cp_instance` for:
+
+  * a single instance
+  * or multiple instances in batch
+* Ensures both CP solvers (`gecode`, `chuffed`) are run for each instance
+* Produces a single JSON file per instance containing all CP approaches
+
+---
+
+## 📂 `Decision/SAT/`
+
+Contains the **SAT-based formulation** of the decision problem using the **Z3 solver**.
+
+### 📄 `sat_model.py`
+
+* Encodes the tournament scheduling problem as a **Boolean SAT model**
+* Defines variables and constraints corresponding to matches and schedules
+
+---
+
+### 📄 `sat_solve.py`
+
+* Interfaces directly with the Z3 solver
+* Solves a single SAT instance
+* Measures runtime and extracts satisfiability result
+
+---
+
+### 📄 `sat_runner.py`
+
+* Runs SAT experiments for:
+
+  * single instance
+  * batch of instances
+* Writes results to:
+
+  ```
+  Decision/res/SAT/<n>.json
+  ```
+* Uses approach name `z3_sat` in result files
+
+---
+
+## 📂 `Decision/res/`
+
+**Results directory (generated automatically).**
+
+* Stores all experimental results in JSON format
+* Organized by technology:
+
+  ```
+  res/
+  ├── CP/
+  │   ├── 6.json
+  │   ├── 8.json
+  │   └── 10.json
+  └── SAT/
+      ├── 6.json
+      ├── 8.json
+      └── 10.json
+  ```
+* Each file strictly follows the course-required format:
+
+  ```json
+  {
+    "approach_name": {
+      "time": 0,
+      "optimal": true,
+      "obj": null,
+      "sol": [...]
+    }
+  }
+  ```
+
+---
+
+## 📂 `Optimization/`
+
+Contains the **optimization-version models** of the problem (not used in the Decision experiments).
+This folder is reserved for the optimization task required by the project.
+
+---
+
+## 📄 `Dockerfile`
+
+Defines the **Docker environment** used to run the project reproducibly.
+
+* Installs:
+
+  * Python
+  * MiniZinc (with Gecode and Chuffed)
+  * Z3 solver
+* Copies the full project into the container
+* Allows running both SAT and CP experiments inside Docker
+
+Example usage:
+
+```bash
+docker build -t sts_project .
+docker run --rm -v "$(pwd)/Decision/res:/app/Decision/res" sts_project \
+python3 Decision/run.py --model CP --batch 6 8 10
+```
+
+
+
+---
+
+## **7. Reproducibility Requirements**
 
 * All models must run inside Docker
 * Only free/open-source solvers are used (MiniZinc + Gecode, Z3, CBC optional for MIP)
@@ -233,8 +419,3 @@ Example matrix entry:
 
 ---
 
-## **7. Academic Integrity**
-
-No externally sourced code or solver-generated models are used.
-All modelling decisions follow the STS literature principles but are implemented independently.
-AI assistance was used only for documentation and must be acknowledged in the project report as required by the course.
