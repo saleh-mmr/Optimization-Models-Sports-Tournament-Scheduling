@@ -119,7 +119,7 @@ Nothing extra, nothing missing.
 
 ---
 
-````markdown
+````
 ## 4. Running the Project (Docker)
 
 All commands must be executed from the **project root directory**, i.e. the folder containing
