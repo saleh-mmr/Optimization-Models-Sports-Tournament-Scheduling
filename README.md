@@ -113,13 +113,8 @@ A placeholder directory is included for future extension with a linear formulati
 
 ---
 
-## **4. Running the Project (Docker)**
 
-Nothing extra, nothing missing.
 
----
-
-````
 ## 4. Running the Project (Docker)
 
 All commands must be executed from the **project root directory**, i.e. the folder containing
@@ -188,7 +183,7 @@ All generated outputs will be saved in:
 Decision/res/
 ```
 
-```
+
 
 ---
 
