@@ -24,6 +24,7 @@ def solve_cp_instance(n, output_dir, approach_name="gecode"):
     cmd = [
         "minizinc",
         "--solver", approach_name,
+        "--time-limit", "300000",
         str(model_path),
         "-D", f"n={n}",
     ]
