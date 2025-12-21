@@ -1,5 +1,5 @@
 # CP/cp_runner.py
-from CP.cp_solve import solve_cp_instance
+from .cp_solve import solve_cp_instance
 
 def run_single_cp(n):
     # Produce both required Gecode and (optional) Chuffed entries in the same JSON

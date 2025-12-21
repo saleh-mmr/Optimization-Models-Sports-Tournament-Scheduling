@@ -1,65 +1,68 @@
 # CP/cp_solve.py
-import json, os, time, subprocess
 
-def solve_cp_instance(n, output_dir="res/CP", approach_name="chuffed"):
+import subprocess
+import time
+import ast
+import json
+import os
+
+
+def solve_cp_instance(n, output_dir="res/CP", approach_name="gecode"):
     os.makedirs(output_dir, exist_ok=True)
     output_path = f"{output_dir}/{n}.json"
 
-    solver_flag = ["--solver", approach_name]  # "gecode" or "chuffed"
-    cmd = ["minizinc", *solver_flag, "--time-limit", "300000", "CP/cp_model.mzn", "-D", f"n={n}"]
+    cmd = [
+        "minizinc",
+        "--solver", approach_name,
+        "CP/cp_model.mzn",
+        "-D", f"n={n}",
+    ]
 
     start = time.perf_counter()
-    try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=305)
-        elapsed = time.perf_counter() - start
-        solved = False
-        sol = None
-        # Default: unknown unless we find SOL or UNSAT
-        status_text = proc.stdout + "\n" + proc.stderr
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    elapsed = time.perf_counter() - start
 
-        # Look for solution line
-        for line in proc.stdout.splitlines():
-            s = line.strip()
-            if s.startswith("SOL="):
-                payload = s[len("SOL="):]
-                sol = json.loads(payload)
-                solved = True  # feasible solution found
-                break
+    stdout = proc.stdout.strip()
 
-        # Detect UNSAT (MiniZinc typically prints "=====UNSATISFIABLE=====")
-        if not solved and "UNSATISFIABLE" in status_text:
-            solved = True  # decision instance conclusively solved with no solution
-            sol = None
-
-        # Apply 300s rule for non-solved terminations
-        time_value = int(elapsed) if solved else 300
-
-        # Merge/append under approach key if file exists
+    # Load existing results (to merge multiple solvers)
+    if os.path.exists(output_path):
+        with open(output_path) as f:
+            result = json.load(f)
+    else:
         result = {}
-        if os.path.exists(output_path):
-            with open(output_path) as f:
-                result = json.load(f)
+
+    # --- CASE 1: solution found ---
+    if stdout.startswith("SOL="):
+        sol_text = stdout.split("=", 1)[1]
+        sol_text = sol_text.split("----------")[0].strip()
+        sol_data = ast.literal_eval(sol_text)
 
         result[approach_name] = {
-            "time": time_value,
-            "optimal": bool(solved),
+            "time": int(elapsed),     # floor of runtime
+            "optimal": True,
             "obj": None,
-            "sol": sol
+            "sol": sol_data
         }
 
-        with open(output_path, "w") as f:
-            json.dump(result, f)
+        print(
+            f"[CP] n={n}, approach={approach_name}, "
+            f"result=sat, time={int(elapsed)}s → {output_path}"
+        )
 
-        print(f"[CP] n={n}, approach={approach_name}, "
-              f"result={'sat' if sol else ('unsat' if solved else 'unknown')}, time={time_value}s → {output_path}")
+    # --- CASE 2: not solved (UNKNOWN / UNSAT not proven) ---
+    else:
+        result[approach_name] = {
+            "time": 300,              # mandatory by spec
+            "optimal": False,
+            "obj": None,
+            "sol": None
+        }
 
-    except subprocess.TimeoutExpired:
-        # Hard timeout: record unsolved with time=300
-        result = {}
-        if os.path.exists(output_path):
-            with open(output_path) as f:
-                result = json.load(f)
-        result[approach_name] = {"time": 300, "optimal": False, "obj": None, "sol": None}
-        with open(output_path, "w") as f:
-            json.dump(result, f)
-        print(f"[CP] n={n}, approach={approach_name}, result=timeout, time=300s → {output_path}")
+        print(
+            f"[CP] n={n}, approach={approach_name}, "
+            f"result=unknown, time=300s → {output_path}"
+        )
+
+    # Write JSON result
+    with open(output_path, "w") as f:
+        json.dump(result, f, indent=2)
