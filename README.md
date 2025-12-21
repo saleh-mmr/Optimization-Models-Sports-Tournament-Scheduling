@@ -183,6 +183,16 @@ All generated outputs will be saved in:
 Decision/res/
 ```
 
+### Apple Silicon (ARM) note
+
+On Apple Silicon (ARM) machines, MiniZinc is distributed as an x86_64 binary.
+To ensure correct execution of the Gecode solver, build and run the Docker image
+explicitly for amd64:
+
+```bash
+docker build --platform=linux/amd64 -t sts_project .
+docker run --rm --platform=linux/amd64 sts_project \
+  python3 Decision/run.py --model CP --n 6
 
 
 ---
