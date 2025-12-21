@@ -115,36 +115,80 @@ A placeholder directory is included for future extension with a linear formulati
 
 ## **4. Running the Project (Docker)**
 
-The project must **only** be executed inside the provided Docker container.
-This ensures that all solvers and dependencies behave consistently.
+Nothing extra, nothing missing.
 
-### **4.1 Build the Docker image**
+---
+
+````markdown
+## 4. Running the Project (Docker)
+
+All commands must be executed from the **project root directory**, i.e. the folder containing
+`Decision/`, `Optimization/`, and `Dockerfile`.
+
+### 4.1 Build the Docker Image
+
+Build the Docker image once:
 
 ```bash
 docker build -t sts_project .
-```
+````
 
-### **4.2 Run a single model on a specific instance**
+---
 
-Example: run CP on instance 6
+### 4.2 Run SAT Model
 
-```bash
-docker run --rm sts_project python3 source/CP/cp_runner.py --instance 6
-```
-
-Example: run SAT on instance 10
+#### Single instance
 
 ```bash
-docker run --rm sts_project python3 source/SAT/sat_runner.py --instance 10
+docker run --rm sts_project \
+  python3 Decision/run.py --model SAT --n 6
 ```
 
-### **4.3 Run *all* models on *all* instances**
+#### Batch execution
 
 ```bash
-docker run --rm sts_project python3 run_all.py
+docker run --rm sts_project \
+  python3 Decision/run.py --model SAT --batch 6 8 10
 ```
 
-(If your repository does not yet contain `run_all.py`, a simple wrapper script can be added.)
+---
+
+### 4.3 Run CP Model
+
+#### Single instance
+
+```bash
+docker run --rm sts_project \
+  python3 Decision/run.py --model CP --n 6
+```
+
+#### Batch execution
+
+```bash
+docker run --rm sts_project \
+  python3 Decision/run.py --model CP --batch 6 8 10
+```
+
+---
+
+### 4.4 Persisting Results
+
+To store results on the host machine, mount the results directory:
+
+```bash
+docker run --rm \
+  -v "$(pwd)/Decision/res:/app/Decision/res" \
+  sts_project \
+  python3 Decision/run.py --model SAT --n 6
+```
+
+All generated outputs will be saved in:
+
+```
+Decision/res/
+```
+
+```
 
 ---
 
