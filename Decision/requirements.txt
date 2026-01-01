@@ -1,0 +1,8 @@
+# Requirements for Sports Tournament Scheduling Project
+# Decision and Optimization versions
+
+# MIP Solver
+pulp>=2.7.0
+
+# SAT/SMT Solver
+z3-solver>=4.12.0
