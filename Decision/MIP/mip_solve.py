@@ -80,7 +80,7 @@ def solve_mip_instance(n, output_dir="res/MIP", approach_name="pulp_cbc", optimi
                 "time": 300,
                 "optimal": False,
                 "obj": None,
-                "sol": None
+                "sol": []
             }
             print(f"[MIP] ERROR: Could not extract solution despite optimal status")
         else:
@@ -105,7 +105,7 @@ def solve_mip_instance(n, output_dir="res/MIP", approach_name="pulp_cbc", optimi
             "time": 300,
             "optimal": False,
             "obj": None,
-            "sol": None
+            "sol": []
         }
         print(f"[MIP] No solution found within time limit")
 

@@ -55,18 +55,15 @@ def solve_sat_instance(n, output_dir="res/SAT", approach_name="sat_z3"):
     if z3_result == sat:
         model = s.model()
         sol = extract_solution(model, M, n, W, P)
-        solved = True
         time_value = elapsed_floor
         sol_payload = sol
     elif z3_result == unsat:
-        solved = True
-        time_value = elapsed_floor
-        sol_payload = None
+        time_value = 300
+        sol_payload = []
     else:
         # unknown (e.g., timeout) -> enforce 300-second rule
-        solved = False
         time_value = 300
-        sol_payload = None
+        sol_payload = []
 
     # Merge with existing file if present (so you can add more SAT approaches later)
     result = {}
@@ -79,7 +76,7 @@ def solve_sat_instance(n, output_dir="res/SAT", approach_name="sat_z3"):
 
     result[approach_name] = {
         "time": time_value,
-        "optimal": bool(solved),
+        "optimal": False,
         "obj": None,
         "sol": sol_payload
     }

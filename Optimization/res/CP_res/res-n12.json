@@ -1,9 +1,0 @@
-{
-  "CP_fairness": {
-    "time": 300,
-    "optimal": false,
-    "obj": null,
-    "sol": [],
-    "comment": "Solver timed out after 300s; no feasible schedule found within the limit (UNKNOWN status)."
-  }
-}
