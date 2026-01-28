@@ -1,7 +1,7 @@
 {
   "gecode": {
     "time": 0,
-    "optimal": true,
+    "optimal": false,
     "obj": null,
     "sol": [
       [
@@ -128,7 +128,7 @@
   },
   "chuffed": {
     "time": 0,
-    "optimal": true,
+    "optimal": false,
     "obj": null,
     "sol": [
       [

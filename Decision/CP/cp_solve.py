@@ -50,7 +50,7 @@ def solve_cp_instance(n, output_dir, approach_name="gecode"):
 
         result[approach_name] = {
             "time": int(elapsed),
-            "optimal": True,
+            "optimal": False,
             "obj": None,
             "sol": sol_data
         }
@@ -66,7 +66,7 @@ def solve_cp_instance(n, output_dir, approach_name="gecode"):
             "time": 300,
             "optimal": False,
             "obj": None,
-            "sol": None
+            "sol": []
         }
 
         print(
