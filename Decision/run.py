@@ -13,8 +13,6 @@ parser.add_argument("--n", type=int,
                     help="Number of teams (single instance)")
 parser.add_argument("--batch", nargs="*", type=int,
                     help="List of n values for batch execution")
-parser.add_argument("--optimize", action="store_true",
-                    help="Run optimization version (MIP only)")
 args = parser.parse_args()
 
 if args.model == "SAT":
@@ -35,8 +33,8 @@ elif args.model == "CP":
 
 elif args.model == "MIP":
     if args.n:
-        run_single_mip(args.n, optimize=args.optimize)
+        run_single_mip(args.n)
     elif args.batch:
-        run_multiple_mip(args.batch, optimize=args.optimize)
+        run_multiple_mip(args.batch)
     else:
         print("Error: Must specify either --n or --batch")

@@ -35,7 +35,7 @@ RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.2/MiniZin
 ENV PATH="/MiniZincIDE-2.9.2-bundle-linux-x86_64/bin:${PATH}"
 
 # Install Python dependencies
-RUN pip install --no-cache-dir z3-solver
+RUN pip install --no-cache-dir z3-solver pulp
 
 # Set working directory
 WORKDIR /app

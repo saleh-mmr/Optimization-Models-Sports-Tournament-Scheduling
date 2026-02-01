@@ -5,10 +5,10 @@ import os
 import time
 from pathlib import Path
 from pulp import PULP_CBC_CMD, LpStatusOptimal
-from MIP.mip_model import build_mip_model, extract_solution_from_model, calculate_objective_value
+from MIP.mip_model import build_mip_model, extract_solution_from_model
 
 
-def solve_mip_instance(n, output_dir="res/MIP", approach_name="pulp_cbc", optimize=False, time_limit=300):
+def solve_mip_instance(n, output_dir="res/MIP", approach_name="pulp_cbc", time_limit=300):
     """
     Solve a MIP instance for the Sports Tournament Scheduling problem.
 
@@ -19,10 +19,7 @@ def solve_mip_instance(n, output_dir="res/MIP", approach_name="pulp_cbc", optimi
     output_dir : str
         Directory to save the results
     approach_name : str
-        Name of the approach (e.g., "pulp_cbc", "pulp_cbc_optimized")
-    optimize : bool
-        If True, solve the optimization version (minimize home/away imbalance)
-        If False, solve the decision version (find any feasible solution)
+        Name of the approach (e.g., "pulp_cbc")
     time_limit : int
         Time limit in seconds (default: 300)
 
@@ -35,8 +32,8 @@ def solve_mip_instance(n, output_dir="res/MIP", approach_name="pulp_cbc", optimi
     output_path = os.path.join(output_dir, f"{n}.json")
 
     # Build the MIP model
-    print(f"[MIP] Building model for n={n}, optimize={optimize}...")
-    model, M, W, P = build_mip_model(n, optimize=optimize)
+    print(f"[MIP] Building model for n={n}...")
+    model, M, W, P = build_mip_model(n)
 
     # Configure the solver
     # PULP_CBC_CMD is the default open-source solver that comes with PuLP
@@ -84,20 +81,13 @@ def solve_mip_instance(n, output_dir="res/MIP", approach_name="pulp_cbc", optimi
             }
             print(f"[MIP] ERROR: Could not extract solution despite optimal status")
         else:
-            # Get objective value if in optimization mode
-            if optimize:
-                # Use the model's objective value directly
-                obj_value = int(round(model.objective.value()))
-            else:
-                obj_value = None
-
             result_data = {
                 "time": elapsed_floor,
                 "optimal": True,
-                "obj": obj_value,
+                "obj": None,
                 "sol": sol
             }
-            print(f"[MIP] Solution found! obj={obj_value}, time={elapsed_floor}s")
+            print(f"[MIP] Solution found! time={elapsed_floor}s")
     else:
         # No solution found (timeout, infeasible, or error)
         # Per project specs: if not solved, time=300 and optimal=False
@@ -131,13 +121,6 @@ def solve_mip_instance(n, output_dir="res/MIP", approach_name="pulp_cbc", optimi
 
 def solve_mip_decision(n, output_dir="res/MIP", approach_name="pulp_cbc"):
     """
-    Convenience function to solve the decision version.
+    Convenience function to solve the MIP instance.
     """
-    solve_mip_instance(n, output_dir, approach_name, optimize=False)
-
-
-def solve_mip_optimization(n, output_dir="res/MIP", approach_name="pulp_cbc_optimized"):
-    """
-    Convenience function to solve the optimization version.
-    """
-    solve_mip_instance(n, output_dir, approach_name, optimize=True)
+    solve_mip_instance(n, output_dir, approach_name)

@@ -3,7 +3,7 @@
 from pulp import LpVariable, LpProblem, LpMinimize, lpSum, LpBinary, LpStatus
 
 
-def build_mip_model(n, optimize=False):
+def build_mip_model(n):
     """
     Build a MIP model for the Sports Tournament Scheduling problem.
 
@@ -11,9 +11,6 @@ def build_mip_model(n, optimize=False):
     -----------
     n : int
         Number of teams (must be even)
-    optimize : bool
-        If True, optimize for balanced home/away games
-        If False, just find a feasible solution
 
     Returns:
     --------
@@ -33,10 +30,7 @@ def build_mip_model(n, optimize=False):
     P = n // 2  # Number of periods per week
 
     # Create the problem
-    if optimize:
-        model = LpProblem("STS_Optimization", LpMinimize)
-    else:
-        model = LpProblem("STS_Decision", LpMinimize)
+    model = LpProblem("STS_Decision", LpMinimize)
 
     # Decision variables: M[i][j][p][w] = 1 if team i plays at home vs team j
     # in period p of week w (i,j in 0..n-1)
@@ -119,38 +113,9 @@ def build_mip_model(n, optimize=False):
     # Fix the first match: team 0 plays at home against team n-1 in period 0, week 0
     model += M[0][n-1][0][0] == 1, "SymBreak_FirstMatch"
 
-    # --- OPTIMIZATION OBJECTIVE (if optimize=True) ---
-    if optimize:
-        # Minimize the maximum imbalance in home/away games for any team
-        # Create auxiliary variables for home games count per team
-        home_games = {}
-        for t in range(n):
-            home_games[t] = LpVariable(f"HomeGames_t{t}", lowBound=0, cat='Integer')
-            # Count home games for team t
-            model += home_games[t] == lpSum(
-                M[t][j][p][w]
-                for j in range(n) if j != t
-                for p in range(P)
-                for w in range(W)
-            ), f"CountHomeGames_t{t}"
-
-        # For n teams, each team plays n-1 games total
-        # Ideal balance: (n-1)/2 home and (n-1)/2 away
-        # Create a variable for maximum deviation from ideal
-        max_deviation = LpVariable("MaxDeviation", lowBound=0, cat='Integer')
-
-        ideal = (n - 1) / 2.0
-        for t in range(n):
-            # |home_games[t] - ideal| <= max_deviation
-            # This is modeled as two constraints:
-            model += home_games[t] - ideal <= max_deviation, f"MaxDev_Upper_t{t}"
-            model += ideal - home_games[t] <= max_deviation, f"MaxDev_Lower_t{t}"
-
-        # Minimize the maximum deviation
-        model += max_deviation, "MinimizeMaxDeviation"
-    else:
-        # For decision version, no objective (or minimize 0)
-        model += 0, "NoObjective"
+    # --- OBJECTIVE FUNCTION ---
+    # For decision version, no objective (minimize 0)
+    model += 0, "NoObjective"
 
     return model, M, W, P
 
@@ -189,27 +154,3 @@ def extract_solution_from_model(model, M, n, W, P):
     return sol
 
 
-def calculate_objective_value(M, n, W, P):
-    """
-    Calculate the objective value (max deviation in home/away balance).
-
-    Returns:
-    --------
-    obj : int
-        Maximum deviation from perfect balance
-    """
-    home_counts = [0] * n
-
-    for t in range(n):
-        for j in range(n):
-            if j == t:
-                continue
-            for p in range(P):
-                for w in range(W):
-                    if M[t][j][p][w].varValue is not None and M[t][j][p][w].varValue > 0.5:
-                        home_counts[t] += 1
-
-    ideal = (n - 1) / 2.0
-    max_deviation = max(abs(count - ideal) for count in home_counts)
-
-    return int(max_deviation)
