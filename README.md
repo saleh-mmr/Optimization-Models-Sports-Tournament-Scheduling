@@ -379,12 +379,6 @@ Contains the **SAT-based formulation** of the decision problem using the **Z3 so
 
 ---
 
-## 📂 `Optimization/`
-
-Contains the **optimization-version models** of the problem (not used in the Decision experiments).
-This folder is reserved for the optimization task required by the project.
-
----
 
 ## 📄 `Dockerfile`
 
